@@ -153,6 +153,7 @@ interface FilterPanelProps {
   filterSrcs: Subject<number[]>
   filterDsts: Subject<number[]>
   filterManufacturers: Subject<string[]>
+  filterJavaScript: Subject<string>
   availableSrcs: Subject<number[]>
   doFiltering: Subject<boolean>
 }
@@ -161,6 +162,7 @@ export const FilterPanel = (props: FilterPanelProps) => {
   const selectedSrcs = useObservableState(props.filterSrcs)
   const selectedDsts = useObservableState(props.filterDsts)
   const selectedManufacturers = useObservableState(props.filterManufacturers)
+  const javaScriptFilter = useObservableState(props.filterJavaScript)
   const availableSrcs = useObservableState(props.availableSrcs)
   const doFiltering = useObservableState(props.doFiltering)
   return (
@@ -214,6 +216,19 @@ export const FilterPanel = (props: FilterPanelProps) => {
             className="basic-multi-select"
             classNamePrefix="select"
             onChange={(values) => props.filterManufacturers.next(values.map((v) => v.value))}
+          />
+        </Col>
+        <Col xs="6" md="7">
+          <Label htmlFor="javascriptFilter">JavaScript Filter</Label>
+          <Input
+            type="textarea"
+            id="javascriptFilter"
+            name="javascriptFilter"
+            placeholder="Enter JavaScript code to filter PGNs (e.g., pgn.src === 1 && pgn.pgn === 127251 && pgn.fields.sog > 5)"
+            value={javaScriptFilter || ''}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => props.filterJavaScript.next(e.target.value)}
+            style={{ fontFamily: 'monospace', fontSize: '12px' }}
+            rows={3}
           />
         </Col>
       </Row>

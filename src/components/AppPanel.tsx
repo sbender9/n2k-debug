@@ -29,6 +29,7 @@ const AppPanel = (props: any) => {
   const [filterSrcs] = useState(new ReplaySubject<number[]>())
   const [filterDsts] = useState(new ReplaySubject<number[]>())
   const [filterManufacturers] = useState(new ReplaySubject<string[]>())
+  const [filterJavaScript] = useState(new ReplaySubject<string>())
   const [availableSrcs] = useState(new ReplaySubject<number[]>())
   const [currentSrcs, setCurrentSrcs] = useState<number[]>([])
 
@@ -99,6 +100,7 @@ const AppPanel = (props: any) => {
                   filterDsts={filterDsts}
                   availableSrcs={availableSrcs}
                   filterManufacturers={filterManufacturers}
+                  filterJavaScript={filterJavaScript}
                 />
               </Card>
             </Col>
