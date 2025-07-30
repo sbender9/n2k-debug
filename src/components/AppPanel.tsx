@@ -91,17 +91,15 @@ const AppPanel = (props: any) => {
         <div id="content">
           <Row>
             <Col xs="24" md="12">
-              <Card>
-                <FilterPanel
-                  doFiltering={doFiltering}
-                  filterPgns={filterPgns}
-                  filterSrcs={filterSrcs}
-                  filterDsts={filterDsts}
-                  availableSrcs={availableSrcs}
-                  filterManufacturers={filterManufacturers}
-                  filterJavaScript={filterJavaScript}
-                />
-              </Card>
+              <FilterPanel
+                doFiltering={doFiltering}
+                filterPgns={filterPgns}
+                filterSrcs={filterSrcs}
+                filterDsts={filterDsts}
+                availableSrcs={availableSrcs}
+                filterManufacturers={filterManufacturers}
+                filterJavaScript={filterJavaScript}
+              />
             </Col>
           </Row>
           <Row>
@@ -109,6 +107,10 @@ const AppPanel = (props: any) => {
               <DataList
                 data={data}
                 filterPgns={filterPgns}
+                filterSrcs={filterSrcs}
+                filterDsts={filterDsts}
+                filterManufacturers={filterManufacturers}
+                filterJavaScript={filterJavaScript}
                 doFiltering={doFiltering}
                 onRowClicked={(row: PGN) => {
                   selectedPgn.next(row)
