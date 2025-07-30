@@ -1,8 +1,8 @@
 import { PGN, getAllPGNs, ManufacturerCode } from '@canboat/ts-pgns'
 import { useObservableState } from 'observable-hooks'
-import React from 'react'
+import React, { useState } from 'react'
 import Select from 'react-select'
-import { Col, Input, Label, Row, Table } from 'reactstrap'
+import { Col, Input, Label, Row, Table, Button, Collapse } from 'reactstrap'
 import Creatable from 'react-select/creatable'
 
 import { Subject } from 'rxjs'
@@ -158,6 +158,7 @@ interface FilterPanelProps {
   doFiltering: Subject<boolean>
 }
 export const FilterPanel = (props: FilterPanelProps) => {
+  const [isOpen, setIsOpen] = useState(true)
   const selectedPGNs = useObservableState(props.filterPgns)
   const selectedSrcs = useObservableState(props.filterSrcs)
   const selectedDsts = useObservableState(props.filterDsts)
@@ -165,91 +166,104 @@ export const FilterPanel = (props: FilterPanelProps) => {
   const javaScriptFilter = useObservableState(props.filterJavaScript)
   const availableSrcs = useObservableState(props.availableSrcs)
   const doFiltering = useObservableState(props.doFiltering)
-  return (
-    <>
-      <Row>
-        <Col xs="6" md="4">
-          <Label htmlFor="pgns">PGNs</Label>
-          <Creatable
-            value={selectedPGNs?.map(toPgnOption)}
-            isMulti
-            name="pgns"
-            options={pgnOptions}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            onChange={(values) => props.filterPgns.next(values.map((v) => v.value as PgnNumber))}
-          />
-        </Col>
-        <Col xs="6" md="4">
-          <Label htmlFor="srcs">Sources</Label>
-          <Creatable
-            value={selectedSrcs?.map(toSrcOption)}
-            isMulti
-            name="srcs"
-            options={availableSrcs?.map(toSrcOption)}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            onChange={(values) => props.filterSrcs.next(values.map((v) => v.value))}
-          />
-        </Col>
-        <Col xs="6" md="4">
-          <Label htmlFor="dsts">Destinations</Label>
-          <Creatable
-            value={selectedDsts?.map(toDstOption)}
-            isMulti
-            name="dsts"
-            options={availableSrcs?.map(toDstOption)}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            onChange={(values) => props.filterDsts.next(values.map((v) => v.value))}
-          />
-        </Col>
-      </Row>
-      <Row>
-        <Col xs="6" md="5">
-          <Label htmlFor="manufacturers">Manufacturers</Label>
-          <Creatable
-            value={selectedManufacturers?.map(toManufacturerOption)}
-            isMulti
-            name="manufacturers"
-            options={manufacturerCodeOptions}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            onChange={(values) => props.filterManufacturers.next(values.map((v) => v.value))}
-          />
-        </Col>
-        <Col xs="6" md="7">
-          <Label htmlFor="javascriptFilter">JavaScript Filter</Label>
-          <Input
-            type="textarea"
-            id="javascriptFilter"
-            name="javascriptFilter"
-            placeholder="Enter JavaScript code to filter PGNs (e.g., pgn.src === 1 && pgn.pgn === 127251 && pgn.fields.sog > 5)"
-            value={javaScriptFilter || ''}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => props.filterJavaScript.next(e.target.value)}
-            style={{ fontFamily: 'monospace', fontSize: '12px' }}
-            rows={3}
-          />
-        </Col>
-      </Row>
-      <Row>
-        <Col xs="12" md="5" align="left">
-          <Label className="switch switch-text switch-primary">
-            <Input
-              type="checkbox"
-              id="Meta"
-              name="meta"
-              className="switch-input"
-              onChange={() => props.doFiltering.next(!doFiltering)}
-              checked={doFiltering}
-            />
-            <span className="switch-label" data-on="Yes" data-off="No" />
-            <span className="switch-handle" />
-          </Label>
-          <span style={{ lineHeight: '24px' }}>Enable Filtering</span>
 
-        </Col>
-      </Row>
-    </>
+  return (
+    <div style={{ padding: '20px' }}>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="mb-0" style={{ fontWeight: 'bold' }}>Filters</h5>
+        <Button
+          color="outline-primary"
+          size="sm"
+          onClick={() => setIsOpen(!isOpen)}
+          style={{ border: 'none', fontSize: '18px' }}
+        >
+          {isOpen ? '−' : '+'}
+        </Button>
+      </div>
+      <Collapse isOpen={isOpen}>
+        <Row className="mb-4">
+          <Col xs="12" md="4" className="mb-3">
+            <Label htmlFor="pgns" style={{ fontWeight: 'bold', marginBottom: '8px' }}>PGNs</Label>
+            <Creatable
+              value={selectedPGNs?.map(toPgnOption)}
+              isMulti
+              name="pgns"
+              options={pgnOptions}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              onChange={(values) => props.filterPgns.next(values.map((v) => v.value as PgnNumber))}
+            />
+          </Col>
+          <Col xs="12" md="4" className="mb-3">
+            <Label htmlFor="srcs" style={{ fontWeight: 'bold', marginBottom: '8px' }}>Sources</Label>
+            <Creatable
+              value={selectedSrcs?.map(toSrcOption)}
+              isMulti
+              name="srcs"
+              options={availableSrcs?.map(toSrcOption)}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              onChange={(values) => props.filterSrcs.next(values.map((v) => v.value))}
+            />
+          </Col>
+          <Col xs="12" md="4" className="mb-3">
+            <Label htmlFor="dsts" style={{ fontWeight: 'bold', marginBottom: '8px' }}>Destinations</Label>
+            <Creatable
+              value={selectedDsts?.map(toDstOption)}
+              isMulti
+              name="dsts"
+              options={availableSrcs?.map(toDstOption)}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              onChange={(values) => props.filterDsts.next(values.map((v) => v.value))}
+            />
+          </Col>
+        </Row>
+        <Row className="mb-4">
+          <Col xs="12" md="6" className="mb-3">
+            <Label htmlFor="manufacturers" style={{ fontWeight: 'bold', marginBottom: '8px' }}>Manufacturers</Label>
+            <Creatable
+              value={selectedManufacturers?.map(toManufacturerOption)}
+              isMulti
+              name="manufacturers"
+              options={manufacturerCodeOptions}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              onChange={(values) => props.filterManufacturers.next(values.map((v) => v.value))}
+            />
+          </Col>
+          <Col xs="12" md="6" className="mb-3">
+            <Label htmlFor="javascriptFilter" style={{ fontWeight: 'bold', marginBottom: '8px' }}>JavaScript Filter</Label>
+            <Input
+              type="textarea"
+              id="javascriptFilter"
+              name="javascriptFilter"
+              placeholder="Enter JavaScript code to filter PGNs (e.g., pgn.src === 1 && pgn.pgn === 127251 && pgn.fields.sog > 5)"
+              value={javaScriptFilter || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => props.filterJavaScript.next(e.target.value)}
+              style={{ fontFamily: 'monospace', fontSize: '12px', resize: 'vertical' }}
+              rows={3}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12" md="6" className="d-flex align-items-center">
+            <Label className="switch switch-text switch-primary mb-0 me-3">
+              <Input
+                type="checkbox"
+                id="Meta"
+                name="meta"
+                className="switch-input"
+                onChange={() => props.doFiltering.next(!doFiltering)}
+                checked={doFiltering}
+              />
+              <span className="switch-label" data-on="Yes" data-off="No" />
+              <span className="switch-handle" />
+            </Label>
+            <span style={{ lineHeight: '24px', fontWeight: 'bold' }}>Enable Filtering</span>
+          </Col>
+        </Row>
+      </Collapse>
+    </div>
   )
 }

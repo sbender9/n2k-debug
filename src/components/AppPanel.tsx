@@ -92,7 +92,6 @@ const AppPanel = (props: any) => {
           <Row>
             <Col xs="24" md="12">
               <Card>
-                <CardHeader>Filters</CardHeader>
                 <FilterPanel
                   doFiltering={doFiltering}
                   filterPgns={filterPgns}
