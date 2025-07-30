@@ -1,19 +1,21 @@
-import { PGNs } from '@canboat/pgns'
+import { PGN, getAllPGNs } from '@canboat/ts-pgns'
 import { useObservableState } from 'observable-hooks'
 import React from 'react'
 import Select from 'react-select'
 import { Col, Input, Label, Row, Table } from 'reactstrap'
 import { Subject } from 'rxjs'
-import { EventData, PgnData, PgnNumber, UnparsedPgn, isUnparsedPgn } from '../types'
+import { PgnNumber, PGNDataMap } from '../types'
 
 interface DataListProps {
-  data: Subject<EventData[]>
-  onRowClicked: (row: any) => void
+  data: Subject<PGNDataMap>
+  onRowClicked: (row: PGN) => void
   filterPgns: Subject<PgnNumber[]>
   doFiltering: Subject<boolean>
 }
 
 const filterFor = (doFiltering: boolean | undefined, pgnNumbers: PgnNumber[] | undefined) => {
+  return () => true
+  /*
   if (!doFiltering || pgnNumbers === undefined || pgnNumbers.length === 0) {
     return () => true
   }
@@ -23,10 +25,11 @@ const filterFor = (doFiltering: boolean | undefined, pgnNumbers: PgnNumber[] | u
       ((typeof eventData.data === 'string' &&
         pgnNumbers.indexOf(Number((eventData.data as string).split(',')[2]) as PgnNumber) >= 0) ||
         (isUnparsedPgn(eventData.data) && pgnNumbers.indexOf(eventData.data.pgn) >= 0)))
+        */
 }
 
 export const DataList = (props: DataListProps) => {
-  const data = useObservableState<EventData[]>(props.data)
+  const data = useObservableState<PGNDataMap>(props.data)
   const filterPgns = useObservableState(props.filterPgns)
   const doFiltering = useObservableState(props.doFiltering)
 
@@ -50,39 +53,25 @@ export const DataList = (props: DataListProps) => {
             <th>Timestamp</th>
             <th>pgn</th>
             <th>src</th>
-            <th>data</th>
+            <th>Description</th>
           </tr>
         </thead>
         <tbody>
-          {(data || []).filter(filterFor(doFiltering, filterPgns)).map((row: EventData, i: number) => {
-            if (row.event === 'canboatjs:unparsed:data') {
-              if (isUnparsedPgn(row.data)) {
-                const unparsed = row.data as UnparsedPgn
-                return pgnRow(
-                  i,
-                  '-',
-                  unparsed.pgn + '',
-                  '-',
-                  unparsed.data.data.map((n) => n.toString(16)),
-                  () => addToFilteredPgns(Number(unparsed.pgn) as PgnNumber),
-                )
-              }
-              const [timestamp, prio, pgn, src, dest, ...input] = (row.data as string).split(',')
-              return pgnRow(i, timestamp, pgn, src, input, () => addToFilteredPgns(Number(pgn) as PgnNumber))
-            }
-            if (row.event === 'N2KAnalyzerOut') {
-              const { timestamp, pgn, src, input } = row.data as PgnData
-              return (
-                <tr key={timestamp + i}>
-                  <td>{timestamp.split('T')[1]}</td>
-                  <td onClick={() => addToFilteredPgns(pgn as PgnNumber)}>{pgn}</td>
-                  <td>{src}</td>
-                  <td onClick={() => props.onRowClicked(row)}>
-                    <span style={{ fontFamily: 'monospace' }}>{(input || [])[0]?.split(',').slice(5).join(' ')}</span>
-                  </td>
-                </tr>
-              )
-            }
+          {(data != undefined ? Object.values(data) : []).filter(filterFor(doFiltering, filterPgns)).sort((a, b) => a.src! - b.src!).map((row: PGN, i: number) => {
+            return (
+              <tr key={row.timestamp! + i}>
+                <td>{row.timestamp!.split('T')[1]}</td>
+                <td onClick={() => addToFilteredPgns(row.pgn as PgnNumber)}>{row.pgn}</td>
+                <td>{row.src}</td>
+                <td
+                  onClick={() => {
+                    props.onRowClicked(row)
+                  }}
+                >
+                  <span style={{ fontFamily: 'monospace' }}>{row.getDefinition().Description}</span>
+                </td>
+              </tr>
+            )
           })}
         </tbody>
       </Table>
@@ -110,7 +99,7 @@ const pgnRow = (
   </tr>
 )
 
-const pgnOptions = PGNs.map((pgn) => ({ value: pgn.PGN, label: `${pgn.PGN} ${pgn.Description}` }))
+const pgnOptions = getAllPGNs().map((pgn) => ({ value: pgn.PGN, label: `${pgn.PGN} ${pgn.Description}` }))
 const pgnOptionsByPgn = pgnOptions.reduce<{
   [pgnNumber: PgnNumber]: {
     value: number

@@ -2,7 +2,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 
 const { ModuleFederationPlugin } = require('webpack').container
-const { WatchIgnorePlugin } = require('webpack')
+const { WatchIgnorePlugin, ProvidePlugin } = require('webpack')
 
 const packageJson = require('./package')
 
@@ -14,6 +14,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    fallback: {
+      buffer: require.resolve('buffer/'),
+    },
   },
   module: {
     rules: [
@@ -59,6 +62,9 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: './public_src/index.html',
+    }),
+    new ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
     }),
   ],
 }

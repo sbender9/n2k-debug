@@ -1,6 +1,6 @@
 {
   "name": "@signalk/n2k-debug",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "NMEA 2000 debugging utility",
   "main": "index.js",
   "scripts": {
@@ -22,12 +22,14 @@
   "devDependencies": {
     "@babel/core": "^7.11.6",
     "@babel/preset-react": "^7.10.4",
-    "@canboat/pgns": "^3.2.0",
+    "@canboat/canboatjs": "^3.7.0",
+    "@canboat/ts-pgns": "^1.10.8",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/react-leaflet": "^2.5.2",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "babel-loader": "^8.1.0",
+    "buffer": "^6.0.3",
     "css-loader": "^5.0.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
@@ -39,8 +41,8 @@
     "eslint-plugin-react": "^7.33.2",
     "file-loader": "^6.1.1",
     "html-webpack-plugin": "^5.0.0-alpha.6",
-    "prettier": "^3.1.1",
     "observable-hooks": "^4.2.3",
+    "prettier": "^3.1.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-leaflet": "^2.8.0",
@@ -52,6 +54,5 @@
     "typescript": "^4.9.5",
     "webpack": "^5.0.0",
     "webpack-cli": "^4.2.0"
-  },
-  "dependencies": {}
+  }
 }

@@ -1,3 +1,5 @@
+import { PGN } from '@canboat/ts-pgns'
+
 export type Brand<K, T> = K & { __brand: T }
 
 export type PgnNumber = Brand<number, 'PgnNumber'>
@@ -7,6 +9,10 @@ export interface EventData {
   data: EventPayload
 }
 type EventPayload = PgnData | string | UnparsedPgn
+
+export type PGNDataMap = {
+  [key: string]: PGN
+}
 
 export interface PgnData {
   prio: number
@@ -33,15 +39,3 @@ export function isUnparsedPgn(pl: EventPayload): pl is UnparsedPgn {
   const unparsed = pl as UnparsedPgn
   return unparsed.pgn !== undefined && unparsed.data !== undefined
 }
-
-import { PGNs } from '@canboat/pgns'
-export const pgnsById = PGNs.reduce<{
-  [key: number]: {
-    PGN: number
-    Id: string
-    Description: string
-  }
-}>((acc, pgn) => {
-  acc[pgn.PGN] = pgn
-  return acc
-}, {})
