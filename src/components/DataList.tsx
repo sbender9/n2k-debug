@@ -1,8 +1,10 @@
-import { PGN, getAllPGNs } from '@canboat/ts-pgns'
+import { PGN, getAllPGNs, ManufacturerCode } from '@canboat/ts-pgns'
 import { useObservableState } from 'observable-hooks'
 import React from 'react'
 import Select from 'react-select'
 import { Col, Input, Label, Row, Table } from 'reactstrap'
+import Creatable from 'react-select/creatable'
+
 import { Subject } from 'rxjs'
 import { PgnNumber, PGNDataMap } from '../types'
 
@@ -53,26 +55,31 @@ export const DataList = (props: DataListProps) => {
             <th>Timestamp</th>
             <th>pgn</th>
             <th>src</th>
+            <th>dst</th>
             <th>Description</th>
           </tr>
         </thead>
         <tbody>
-          {(data != undefined ? Object.values(data) : []).filter(filterFor(doFiltering, filterPgns)).sort((a, b) => a.src! - b.src!).map((row: PGN, i: number) => {
-            return (
-              <tr key={row.timestamp! + i}>
-                <td>{row.timestamp!.split('T')[1]}</td>
-                <td onClick={() => addToFilteredPgns(row.pgn as PgnNumber)}>{row.pgn}</td>
-                <td>{row.src}</td>
-                <td
-                  onClick={() => {
-                    props.onRowClicked(row)
-                  }}
-                >
-                  <span style={{ fontFamily: 'monospace' }}>{row.getDefinition().Description}</span>
-                </td>
-              </tr>
-            )
-          })}
+          {(data != undefined ? Object.values(data) : [])
+            .filter(filterFor(doFiltering, filterPgns))
+            .sort((a, b) => a.src! - b.src!)
+            .map((row: PGN, i: number) => {
+              return (
+                <tr key={row.timestamp! + i}>
+                  <td>{row.timestamp!.split('T')[1]}</td>
+                  <td onClick={() => addToFilteredPgns(row.pgn as PgnNumber)}>{row.pgn}</td>
+                  <td>{row.src}</td>
+                  <td>{row.dst}</td>
+                  <td
+                    onClick={() => {
+                      props.onRowClicked(row)
+                    }}
+                  >
+                    <span style={{ fontFamily: 'monospace' }}>{row.getDefinition().Description}</span>
+                  </td>
+                </tr>
+              )
+            })}
         </tbody>
       </Table>
     </div>
@@ -110,11 +117,32 @@ const pgnOptionsByPgn = pgnOptions.reduce<{
   return acc
 }, {})
 
+const manufacturerCodeOptions = Object.values(ManufacturerCode).map((name) => ({
+  value: name,
+  label: name,
+}))
+
 const toPgnOption = (i: PgnNumber) =>
   pgnOptionsByPgn[i] || {
     value: i,
-    label: `${i} Unknown`,
+    label: `${i}`,
   }
+
+const toSrcOption = (i: number) => ({
+  value: i,
+  label: `${i}`,
+})
+
+const toDstOption = (i: number) => ({
+  value: i,
+  label: `${i}`,
+})
+
+const toManufacturerOption = (i: string) => ({
+  value: i,
+  label: i,
+})
+
 
 export interface PgnOption {
   value: number
@@ -122,26 +150,75 @@ export interface PgnOption {
 }
 interface FilterPanelProps {
   filterPgns: Subject<PgnNumber[]>
+  filterSrcs: Subject<number[]>
+  filterDsts: Subject<number[]>
+  filterManufacturers: Subject<string[]>
+  availableSrcs: Subject<number[]>
   doFiltering: Subject<boolean>
 }
 export const FilterPanel = (props: FilterPanelProps) => {
-  const selectedValues = useObservableState(props.filterPgns)
+  const selectedPGNs = useObservableState(props.filterPgns)
+  const selectedSrcs = useObservableState(props.filterSrcs)
+  const selectedDsts = useObservableState(props.filterDsts)
+  const selectedManufacturers = useObservableState(props.filterManufacturers)
+  const availableSrcs = useObservableState(props.availableSrcs)
   const doFiltering = useObservableState(props.doFiltering)
   return (
     <>
       <Row>
-        <Col xs="12" md="11">
-          <Select
-            value={selectedValues?.map(toPgnOption)}
+        <Col xs="6" md="4">
+          <Label htmlFor="pgns">PGNs</Label>
+          <Creatable
+            value={selectedPGNs?.map(toPgnOption)}
             isMulti
-            name="colors"
+            name="pgns"
             options={pgnOptions}
             className="basic-multi-select"
             classNamePrefix="select"
             onChange={(values) => props.filterPgns.next(values.map((v) => v.value as PgnNumber))}
           />
         </Col>
-        <Col xs="12" md="1" align="right">
+        <Col xs="6" md="4">
+          <Label htmlFor="srcs">Sources</Label>
+          <Creatable
+            value={selectedSrcs?.map(toSrcOption)}
+            isMulti
+            name="srcs"
+            options={availableSrcs?.map(toSrcOption)}
+            className="basic-multi-select"
+            classNamePrefix="select"
+            onChange={(values) => props.filterSrcs.next(values.map((v) => v.value))}
+          />
+        </Col>
+        <Col xs="6" md="4">
+          <Label htmlFor="dsts">Destinations</Label>
+          <Creatable
+            value={selectedDsts?.map(toDstOption)}
+            isMulti
+            name="dsts"
+            options={availableSrcs?.map(toDstOption)}
+            className="basic-multi-select"
+            classNamePrefix="select"
+            onChange={(values) => props.filterDsts.next(values.map((v) => v.value))}
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col xs="6" md="5">
+          <Label htmlFor="manufacturers">Manufacturers</Label>
+          <Creatable
+            value={selectedManufacturers?.map(toManufacturerOption)}
+            isMulti
+            name="manufacturers"
+            options={manufacturerCodeOptions}
+            className="basic-multi-select"
+            classNamePrefix="select"
+            onChange={(values) => props.filterManufacturers.next(values.map((v) => v.value))}
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col xs="12" md="5" align="left">
           <Label className="switch switch-text switch-primary">
             <Input
               type="checkbox"
@@ -154,6 +231,8 @@ export const FilterPanel = (props: FilterPanelProps) => {
             <span className="switch-label" data-on="Yes" data-off="No" />
             <span className="switch-handle" />
           </Label>
+          <span style={{ lineHeight: '24px' }}>Enable Filtering</span>
+
         </Col>
       </Row>
     </>

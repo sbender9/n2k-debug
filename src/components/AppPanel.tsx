@@ -26,6 +26,12 @@ const AppPanel = (props: any) => {
   const [selectedPgn] = useState(new ReplaySubject<PGN>())
   const [doFiltering] = useState(new ReplaySubject<boolean>())
   const [filterPgns] = useState(new ReplaySubject<PgnNumber[]>())
+  const [filterSrcs] = useState(new ReplaySubject<number[]>())
+  const [filterDsts] = useState(new ReplaySubject<number[]>())
+  const [filterManufacturers] = useState(new ReplaySubject<string[]>())
+  const [availableSrcs] = useState(new ReplaySubject<number[]>())
+  const [currentSrcs, setCurrentSrcs] = useState<number[]>([])
+
   const parser = new FromPgn({
     returnNulls: true,
     checkForInvalidFields: true,
@@ -33,9 +39,8 @@ const AppPanel = (props: any) => {
     useCamelCompat: false,
     returnNonMatches: true,
     createPGNObjects: true,
-    includeInputData: true
+    includeInputData: true,
   })
-  
 
   parser.on('error', (pgn: any, error: any) => {
     console.error(`Error parsing ${pgn.pgn} ${error}`)
@@ -47,7 +52,7 @@ const AppPanel = (props: any) => {
       subscribe: 'none',
       events: 'canboatjs:rawoutput',
     })
-   
+
     ws.onmessage = (x: any) => {
       //console.log('Received dataX', x)
 
@@ -57,13 +62,22 @@ const AppPanel = (props: any) => {
       }
       let pgn: PGN | undefined = undefined
       pgn = parser.parse(parsed.data)
-      if (pgn) {
+      if (pgn !== undefined) {
         //console.log('pgn', pgn)
-        setList((prev:any) => {
+        setList((prev: any) => {
           prev[`${pgn!.getDefinition().Id}-${pgn!.src}`] = pgn
-          data.next({...prev})
+          data.next({ ...prev })
           return prev
         })
+
+        // Update available sources
+        if (!currentSrcs.includes(pgn.src!)) {
+          setCurrentSrcs((prev) => {
+            prev.push(pgn!.src!)
+            availableSrcs.next([...prev])
+            return prev
+          })
+        } 
       }
     }
     setWs(ws)
@@ -75,8 +89,18 @@ const AppPanel = (props: any) => {
       <CardBody>
         <div id="content">
           <Row>
-            <Col xs="12" md="6">
-              <FilterPanel doFiltering={doFiltering} filterPgns={filterPgns} />
+            <Col xs="24" md="12">
+              <Card>
+                <CardHeader>Filters</CardHeader>
+                <FilterPanel
+                  doFiltering={doFiltering}
+                  filterPgns={filterPgns}
+                  filterSrcs={filterSrcs}
+                  filterDsts={filterDsts}
+                  availableSrcs={availableSrcs}
+                  filterManufacturers={filterManufacturers}
+                />
+              </Card>
             </Col>
           </Row>
           <Row>
